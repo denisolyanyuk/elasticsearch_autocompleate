@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<input type="text" id="input">
+
+
+<span id="result"></span>
+
+</body>
+
+<script>
+    document.getElementById('input').addEventListener('change', async (e) => {
+        const text = e.target.value
+
+        if (text.length < 6) {
+            document.getElementById('result').textContent = 'too small word'
+            return
+        }
+        const data = {
+            "query": {
+                "fuzzy": {
+                    "value": {
+                        "value": text,
+                        "fuzziness": "2"
+                    }
+                }
+            }
+        }
+        const response = await fetch('http://127.0.0.1:9200/my-words/_search', {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+        const responseJson = await response.json()
+        const hits = responseJson['hits']
+        if (hits['total']['value'] === 0 ) {
+            document.getElementById('result').textContent = '0 hits'
+        } else {
+            document.getElementById('result').textContent = hits["hits"][0]["_source"]["value"]
+        }
+        console.log(responseJson)
+    })
+</script>
+</html>
